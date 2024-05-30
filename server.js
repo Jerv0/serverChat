@@ -1,14 +1,12 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const axios = require('axios').create({
-    httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-});
+const axios = require('axios');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const URL = 'https://127.0.0.1/backend/user.php?table=mensaje';
+const URL = 'http://127.0.0.1/backend/user.php?table=mensaje';
 const users = {}; // Almacenará los usuarios conectados
 
 io.on('connection', (socket) => {
