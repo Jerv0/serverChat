@@ -1,11 +1,12 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const axios = require('axios');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
+const URL = 'https://18.214.47.239/backend/user.php?table=mensaje';
 const users = {}; // Almacenará los usuarios conectados
 
 io.on('connection', (socket) => {
@@ -29,11 +30,21 @@ io.on('connection', (socket) => {
     });
 
     // Manejar el envío de mensajes a la sala privada
-    socket.on('sendMessageToPrivateRoom', (userId, partnerId, message) => {
+    socket.on('sendMessageToPrivateRoom', async (userId, partnerId, message) => {
         const roomName = [userId, partnerId].sort().join('_');
         const msg = { user: userId, message };
         io.to(roomName).emit('messageFromPrivateRoom', msg);
         console.log(`Message from ${userId} to ${roomName}: ${message}`);
+
+        // Llamar al endpoint para guardar el mensaje
+        const data = {
+            id_sala: roomName,
+            user_emisor: userId,
+            user_receptor: partnerId,
+            message: message,
+        };
+
+        await axios.post(url, data);
     });
 
     // Manejar la desconexión del usuario
@@ -46,4 +57,3 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
