@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
             message: message,
         };
 
-        await axios.post(url, data);
+        await axios.post(URL, data);
     });
 
     // Manejar la desconexión del usuario
