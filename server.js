@@ -1,12 +1,21 @@
 const express = require('express');
-const http = require('http');
+const fs = require('fs');
+const https = require('https');
 const { Server } = require('socket.io');
 const axios = require('axios');
 
 const app = express();
-const server = http.createServer(app);
+
+// Leer el certificado y la clave privada (pueden ser auto-firmados para desarrollo)
+const options = {
+    key: fs.readFileSync('path/to/key.pem'),
+    cert: fs.readFileSync('path/to/cert.pem')
+};
+
+// Crear el servidor HTTPS
+const server = https.createServer(app);
 const io = new Server(server);
-const URL = 'http://127.0.0.1/backend/user.php?table=mensaje';
+const URL = 'https://127.0.0.1/backend/user.php?table=mensaje';
 const users = {}; // Almacenará los usuarios conectados
 
 io.on('connection', (socket) => {
@@ -36,6 +45,11 @@ io.on('connection', (socket) => {
         io.to(roomName).emit('messageFromPrivateRoom', msg);
         console.log(`Message from ${userId} to ${roomName}: ${message}`);
 
+        // Configurar axios para ignorar certificados no válidos
+        const axiosInstance = axios.create({
+            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+        });
+
         // Llamar al endpoint para guardar el mensaje
         const data = {
             id_sala: roomName,
@@ -45,11 +59,11 @@ io.on('connection', (socket) => {
         };
 
         console.log(data);
-        await axios.post(URL, data);
+        await axiosInstance.post(URL, data);
 
-        const response = await axios.get(URL);
+        const response = await axiosInstance.get(URL);
 
-        console.log(response.data.usuarios);
+        console.log(response.data);
     });
 
     // Manejar la desconexión del usuario
@@ -58,6 +72,7 @@ io.on('connection', (socket) => {
         delete users[socket.id];
     });
 });
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
