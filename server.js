@@ -1,19 +1,10 @@
 const express = require('express');
-const fs = require('fs');
-const https = require('https');
+const http = require('http');
 const { Server } = require('socket.io');
 const axios = require('axios');
 
 const app = express();
-
-// Leer el certificado y la clave privada (pueden ser auto-firmados para desarrollo)
-const options = {
-    key: fs.readFileSync('path/to/key.pem'),
-    cert: fs.readFileSync('path/to/cert.pem')
-};
-
-// Crear el servidor HTTPS
-const server = https.createServer(app);
+const server = http.createServer(app);
 const io = new Server(server);
 const URL = 'https://127.0.0.1/backend/user.php?table=mensaje';
 const users = {}; // Almacenará los usuarios conectados
