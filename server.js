@@ -44,6 +44,7 @@ io.on('connection', (socket) => {
             message: message,
         };
 
+        console.log(data);
         await axios.post(URL, data);
     });
 
