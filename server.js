@@ -1,3 +1,4 @@
+const https = require('https');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -48,13 +49,7 @@ io.on('connection', (socket) => {
             user_receptor: partnerId,
             message: message,
         };
-
-        console.log(data);
         await axiosInstance.post(URL, data);
-
-        const response = await axiosInstance.get(URL);
-
-        console.log(response.data);
     });
 
     // Manejar la desconexión del usuario
