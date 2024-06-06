@@ -1,12 +1,27 @@
 const https = require('https');
+const fs = require('fs');
 const express = require('express');
-const http = require('http');
 const { Server } = require('socket.io');
 const axios = require('axios');
 
 const app = express();
-const server = http.createServer(app);
+
+// Cargar los certificados SSL
+const privateKey = fs.readFileSync('/etc/ssl/certificadoTfg/privateKey.key', 'utf8');
+const certificate = fs.readFileSync('/etc/ssl/certificadoTfg/certificado.crt', 'utf8');
+const ca = fs.readFileSync('/etc/ssl/certificadoTfg/CA.crt', 'utf8');
+
+// Configuración de las credenciales SSL
+const credentials = {
+    key: privateKey,
+    cert: certificate,
+    ca: ca,
+};
+
+// Crear un servidor HTTPS
+const server = https.createServer(credentials, app);
 const io = new Server(server);
+
 const URL = 'https://127.0.0.1/backend/user.php?table=mensaje';
 const users = {}; // Almacenará los usuarios conectados
 
@@ -39,7 +54,7 @@ io.on('connection', (socket) => {
 
         // Configurar axios para ignorar certificados no válidos
         const axiosInstance = axios.create({
-            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
         });
 
         // Llamar al endpoint para guardar el mensaje
